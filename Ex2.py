@@ -28,7 +28,9 @@ def adaboost(x, y, T):
         for index, [theta, j] in enumerate(h_params_mat):
             j = int(j)
             h_left_x = np.array(x[:, j] <= theta, dtype=int)
+            h_left_x[h_left_x == 0] = -1
             h_right_x = np.array(x[:, j] > theta, dtype=int)
+            h_right_x[h_right_x == 0] = -1
             p_arr[index] = np.array(h_left_x == y, dtype=int).sum() / m
 
     res = np.sign(np.dot(alpha, h_arr))
