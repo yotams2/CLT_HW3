@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import random
 
 
-def adaboost(x, y, T):
+def adaboost(x, y, x_test, y_test, T):
     m = x.shape[0]
+    m_test = x_test.shape[0]
     d = x.shape[1]
     p = [1/m] * m  # initialize an array of length m
 
@@ -19,11 +20,13 @@ def adaboost(x, y, T):
             indices_to_remove += [index]
     h_params_mat = np.delete(h_params_mat, indices_to_remove, axis=0)
 
-    #h_params_mat = h_params_mat[0:40000]  # FIXME remove
-
     h_t_params = np.zeros([T, 3])
     alpha = np.zeros(T)
     h_t_x = np.zeros([T, m])
+    h_t_x_test = np.zeros([T, m_test])
+
+    err_rate_train = np.zeros(T)
+    err_rate_test = np.zeros(T)
 
     for t in range(T):
         print(f"Running iteration {t}/{T}")
@@ -49,14 +52,25 @@ def adaboost(x, y, T):
 
         h_x_final_t = np.sign(np.sum([np.multiply(alpha[i], h_t_x[i]) for i in range(t+1)], axis=0))
         h_x_final_t_err = np.sum(np.array(h_x_final_t != y, dtype=int))
-        print(f"Error rate is {100 * h_x_final_t_err / m}% [{h_x_final_t_err}/{m}]")
+        err_rate_train[t] = 100 * h_x_final_t_err / m
+        print(f"TRAIN SET :: Error rate is {err_rate_train[t]}% [{h_x_final_t_err}/{m}]")
 
-    res = np.sign(np.dot(alpha, h_arr))
+        h_t_x_test[t] = np.array(x_test[:, j_t] <= theta_t, dtype=int)
+        h_t_x_test[t][h_t_x_test[t] == 0] = -1
+        h_t_x_test[t] *= sign_t
+        h_x_test_final_t = np.sign(np.sum([np.multiply(alpha[i], h_t_x_test[i]) for i in range(t + 1)], axis=0))
+        h_x_test_final_t_err = np.sum(np.array(h_x_test_final_t != y_test, dtype=int))
+        err_rate_test[t] = 100 * h_x_test_final_t_err / m_test
+        print(f"TEST SET :: Error rate is {err_rate_test[t]}% [{h_x_test_final_t_err}/{m_test}]")
+
+    return err_rate_train, err_rate_test
 
 
 def main():
     x_train = np.loadtxt(fname="data/MNIST_train_images.csv", delimiter=",")
     y_train = np.loadtxt(fname="data/MNIST_train_labels.csv", delimiter=",")
+    x_test = np.loadtxt(fname="data/MNIST_test_images.csv", delimiter=",")
+    y_test = np.loadtxt(fname="data/MNIST_test_labels.csv", delimiter=",")
     T = 30
 
     index = random.randint(0, len(x_train))
@@ -65,7 +79,13 @@ def main():
     plt.savefig("random_MNIST_sample")
     plt.show()
 
-    adaboost(x_train, y_train, T)
+    err_rate_train, err_rate_test = adaboost(x_train, y_train, x_test, y_test, T)
+
+    with open('err_rate_train.npy', 'wb') as f:
+        np.save(f, err_rate_train)
+    with open('err_rate_test.npy', 'wb') as f:
+        np.save(f, err_rate_test)
+
 
 if __name__ == "__main__":
     main()
