@@ -66,12 +66,21 @@ def adaboost(x, y, x_test, y_test, T):
     return err_rate_train, err_rate_test
 
 
+def plot_acc(acc, T, set_name):
+    plt.plot(range(T), acc)
+    plt.xlabel("Iteration")
+    plt.ylabel("Accuracy [%]")
+    plt.title(f"Accuracy Per Iteration - {set_name} Set")
+    plt.savefig(f"Ex2_Accuracy_{set_name}")
+    plt.show()
+
 def main():
     x_train = np.loadtxt(fname="data/MNIST_train_images.csv", delimiter=",")
     y_train = np.loadtxt(fname="data/MNIST_train_labels.csv", delimiter=",")
     x_test = np.loadtxt(fname="data/MNIST_test_images.csv", delimiter=",")
     y_test = np.loadtxt(fname="data/MNIST_test_labels.csv", delimiter=",")
     T = 30
+    new_training = False
 
     index = random.randint(0, len(x_train))
     plt.imshow(np.asarray(np.reshape(x_train[index, :], (28, 28))), cmap="gray", vmin=0, vmax=255)
@@ -79,12 +88,20 @@ def main():
     plt.savefig("random_MNIST_sample")
     plt.show()
 
-    err_rate_train, err_rate_test = adaboost(x_train, y_train, x_test, y_test, T)
+    if new_training:
+        err_rate_train, err_rate_test = adaboost(x_train, y_train, x_test, y_test, T)
 
-    with open('err_rate_train.npy', 'wb') as f:
-        np.save(f, err_rate_train)
-    with open('err_rate_test.npy', 'wb') as f:
-        np.save(f, err_rate_test)
+        with open('err_rate_train.npy', 'wb') as f:
+            np.save(f, err_rate_train)
+        with open('err_rate_test.npy', 'wb') as f:
+            np.save(f, err_rate_test)
+    else:
+        with open('err_rate_train.npy', 'rb') as f:
+            err_rate_train = np.load(f)
+        with open('err_rate_test.npy', 'rb') as f:
+            err_rate_test = np.load(f)
+        plot_acc(100-err_rate_train, T, "Training")
+        plot_acc(100-err_rate_test, T, "Test")
 
 
 if __name__ == "__main__":
