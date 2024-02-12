@@ -70,8 +70,8 @@ def plot_acc(acc, T, set_name):
     plt.plot(range(T), acc)
     plt.xlabel("Iteration")
     plt.ylabel("Accuracy [%]")
-    plt.title(f"Accuracy Per Iteration - {set_name} Set")
-    plt.savefig(f"Ex2_Accuracy_{set_name}")
+    plt.title(f"Accuracy per iteration - {set_name} set")
+    plt.savefig(f"Ex2_accuracy_{set_name}")
     plt.show()
 
 def main():
@@ -100,8 +100,8 @@ def main():
             err_rate_train = np.load(f)
         with open('err_rate_test.npy', 'rb') as f:
             err_rate_test = np.load(f)
-        plot_acc(100-err_rate_train, T, "Training")
-        plot_acc(100-err_rate_test, T, "Test")
+        plot_acc(100-err_rate_train, T, "training")
+        plot_acc(100-err_rate_test, T, "test")
 
 
 if __name__ == "__main__":
